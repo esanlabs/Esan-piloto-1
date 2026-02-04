@@ -11,7 +11,7 @@
 
     <a-assets>
       <img id="esan360" src="gth.jpeg">
-      <video id="videoUni" src="video2.mp4" loop="false" crossorigin="anonymous" playsinline webkit-playsinline></video>
+      <video id="videoUni" src="video2.mp4" preload="auto" loop="false" crossorigin="anonymous" playsinline webkit-playsinline></video>
     </a-assets>
 
     <a-sky src="#esan360" rotation="0 -90 0"></a-sky>
@@ -31,9 +31,8 @@
       src="#videoUni"
       width="5"
       height="3"
-      position="0 1.6 -30"
+      position="0 1.6 -4" 
       visible="false"
-      animation__entrar="property: position; to: 0 1.6 -4; dur: 8000; easing: easeOutCubic; startEvents: videoEntra"
       animation__salir="property: position; to: 0 1.6 -30; dur: 4000; easing: easeInQuad; startEvents: videoSale">
     </a-video>
 
@@ -63,14 +62,11 @@
     const telonNegro = document.querySelector('#telonNegro');
     const estrellasContainer = document.querySelector('#estrellas');
 
-    // Guardamos la configuración de la animación de entrada para reusarla
     const animEntrada = "property: position; to: 0 1.6 -2.5; dur: 8000; easing: easeOutCubic; delay: 500";
 
-    // --- FUNCIÓN PARA GENERAR ESTRELLAS ALEATORIAS ---
     function generarEstrellas(cantidad) {
       for (let i = 0; i < cantidad; i++) {
         let estrella = document.createElement('a-sphere');
-        
         let theta = Math.random() * Math.PI * 2;
         let phi = Math.acos((Math.random() * 2) - 1);
         let dist = 50; 
@@ -91,7 +87,6 @@
           dir: 'alternate',
           loop: true
         });
-
         estrellasContainer.appendChild(estrella);
       }
     }
@@ -108,10 +103,11 @@
       }, 500);
 
       video.currentTime = 0;
+      video.load(); // Carga inmediata
+      
       pantalla.setAttribute('visible', 'true');
-      pantalla.emit('videoEntra');
-
-      setTimeout(() => { video.play(); }, 1000);
+      // Eliminamos la animación de entrada para que aparezca "ni bien das clic"
+      video.play(); 
     });
 
     video.addEventListener('ended', function() {
@@ -119,14 +115,10 @@
       estrellasContainer.setAttribute('visible', 'false');
       pantalla.emit('videoSale');
 
-      // RESET DEL BOTÓN AL FINALIZAR
       setTimeout(() => {
         pantalla.setAttribute('visible', 'false');
-        
-        // 1. Cambiamos el texto
         textoBoton.setAttribute('value', 'VUELVE A VER\nNUESTRA\nHISTORIA');
 
-        // 2. Reposicionamos y reiniciamos la animación
         contenedorBtn.setAttribute('position', '0 1.6 -15');
         contenedorBtn.removeAttribute('animation');
         contenedorBtn.setAttribute('visible', 'true');
@@ -140,6 +132,7 @@
   </script>
 </body>
 </html>
+
 
 
 
