@@ -1,139 +1,206 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="utf-8">
-    <title>ESAN - Trayectoria histórica</title>
-    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <meta charset="utf-8">
+  <title>ESAN - Trayectoria histórica con Aurora</title>
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
 </head>
 
 <body>
-    <a-scene>
-        <a-assets>
-            <img id="esan360" src="patio.jpg">
-            <video id="videoUni" src="video5.mp4" loop="false" crossorigin="anonymous" playsinline webkit-playsinline></video>
-        </a-assets>
+  <a-scene>
+    <a-assets>
+      <img id="esan360" src="patio.jpg">
+      <video id="videoUni" src="video5.mp4" preload="auto"
+             crossorigin="anonymous" playsinline webkit-playsinline></video>
+    </a-assets>
 
-        <a-sky src="#esan360" rotation="0 -90 0"></a-sky>
+    <a-sky src="#esan360" rotation="0 -90 0"></a-sky>
+    
+    <a-entity id="auroraContainer" visible="false"></a-entity>
 
-        <a-sphere
-            id="telonNegro"
-            radius="60"
-            material="color: #000; side: back; transparent: true; opacity: 0; shader: flat"
-            animation__oscurecer="property: material.opacity; to: 1; dur: 3000; startEvents: cineStart; easing: easeInOutQuad"
-            animation__aclarar="property: material.opacity; to: 0; dur: 3000; startEvents: cineEnd; easing: easeInOutQuad">
-        </a-sphere>
+    <a-sphere
+      id="telonNegro"
+      radius="60"
+      material="color: #000; side: back; transparent: true; opacity: 0; shader: flat"
+      animation__oscurecer="property: material.opacity; to: 1; dur: 2000; startEvents: cineStart"
+      animation__aclarar="property: material.opacity; to: 0; dur: 2000; startEvents: cineEnd">
+    </a-sphere>
 
-        <a-entity id="estrellas" visible="false"></a-entity>
+    <a-entity id="grupoVideo" position="0 1.6 -4" visible="false">
+      <a-video id="pantallaVideo" src="#videoUni" width="5" height="3"></a-video>
+      <a-plane id="barraFondo" width="5" height="0.12" color="#696a6d" position="0 -1.6 0.01"></a-plane>
+      <a-plane id="barraProgreso" width="0.01" height="0.12" color="#E3173E" position="-2.5 -1.6 0.02"></a-plane>
+      <a-text id="textoDuracion" value="0:00 / 0:00" color="#FFFFFF" width="3" align="right" position="2.4 -1.48 0.10"></a-text>
 
-        <a-video
-            id="pantallaVideo"
-            src="#videoUni"
-            width="5"
-            height="3"
-            position="0 1.6 -30"
-            visible="false"
-            animation__entrar="property: position; to: 0 1.6 -4; dur: 8000; easing: easeOutCubic; startEvents: videoEntra"
-            animation__salir="property: position; to: 0 1.6 -30; dur: 4000; easing: easeInQuad; startEvents: videoSale">
-        </a-video>
+      <a-entity id="controles" position="0 -1.9 0.1">
+        <a-circle id="btnReset" class="clickable" color="#FFFFFF" radius="0.2" position="-1.2 0 0">
+          <a-text value="Reiniciar" align="center" color="#000000" width="2"></a-text>
+        </a-circle>
+        <a-circle id="btnNormal" class="clickable" color="#FFFFFF" radius="0.2" position="-0.6 0 0">
+          <a-text value="1x" align="center" color="#E3173E" width="2"></a-text>
+        </a-circle>
+        <a-circle id="btnPausa" class="clickable" color="#E3173E" radius="0.25" position="0 0 0">
+          <a-text id="txtPausa" value="PAUSA" align="center" color="#FFFFFF" width="2"></a-text>
+        </a-circle>
+        <a-circle id="btnRapido" class="clickable" color="#FFFFFF" radius="0.2" position="0.6 0 0">
+          <a-text value="2x >>" align="center" color="#E3173E" width="2"></a-text>
+        </a-circle>
+        <a-circle id="btnSalir" class="clickable" color="#E3173E" radius="0.2" position="1.3 0 0">
+          <a-text value="Volver al\ninicio" align="center" color="#FFFFFF" width="2"></a-text>
+        </a-circle>
+      </a-entity>
+    </a-entity>
 
-        <a-entity
-            id="contenedorBoton"
-            position="0 1.6 -15"
-            visible="true"
-            animation="property: position; to: 0 1.6 -2.5; dur: 8000; easing: easeOutCubic; delay: 500">
+    <a-entity id="contenedorBoton" position="0 1.6 -3" scale="1 1 1" visible="true">
+      <a-circle id="btnAccion" class="clickable" color="#000000" opacity="0.8" radius="0.65"
+                animation__pulse="property: scale; to: 1.1 1.1 1.1; dur: 1000; dir: alternate; loop: true">
+        <a-text id="textoBoton" value="CONOCE NUESTRA\nHISTORIA" align="center" color="#FFFFFF" width="3"></a-text>
+      </a-circle>
+    </a-entity>
 
-            <a-circle id="btnAccion" class="clickable" color="#000000" opacity="0.6" radius="0.65">
-                <a-text id="textoBoton" value="CONOCE NUESTRA\nHISTORIA" align="center" color="#FFFFFF" width="1" wrap-count="20"></a-text>
-            </a-circle>
-        </a-entity>
+    <a-entity id="rig" position="0 0 0">
+      <a-camera look-controls wasd-controls>
+        <a-cursor color="#FFD700" raycaster="objects: .clickable"></a-cursor>
+      </a-camera>
+      <a-entity laser-controls="hand: right" raycaster="objects: .clickable" line="color: #FFD700; opacity: 0.9"></a-entity>
+      <a-entity laser-controls="hand: left" raycaster="objects: .clickable" line="color: #FFD700; opacity: 0.9"></a-entity>
+    </a-entity>
+  </a-scene>
 
-        <a-entity camera look-controls position="0 1.6 0">
-            <a-cursor color="#FFD700" radius="0.015" scale="0.3 0.3 0.3" raycaster="objects: .clickable"></a-cursor>
-        </a-entity>
-    </a-scene>
+  <script>
+    const video = document.querySelector('#videoUni');
+    const grupoVideo = document.querySelector('#grupoVideo');
+    const contenedorBtn = document.querySelector('#contenedorBoton');
+    const textoBoton = document.querySelector('#textoBoton');
+    const telon = document.querySelector('#telonNegro');
+    const txtPausa = document.querySelector('#txtPausa');
+    const barraProgreso = document.querySelector('#barraProgreso');
+    const textoDuracion = document.querySelector('#textoDuracion');
+    const auroraContainer = document.querySelector('#auroraContainer');
 
-    <script>
-        const video = document.querySelector('#videoUni');
-        const pantalla = document.querySelector('#pantallaVideo');
-        const contenedorBtn = document.querySelector('#contenedorBoton');
-        const textoBoton = document.querySelector('#textoBoton');
-        const btnAccion = document.querySelector('#btnAccion');
-        const telonNegro = document.querySelector('#telonNegro');
-        const estrellasContainer = document.querySelector('#estrellas');
+    let DURACION_TOTAL = 0;
+    const ANCHO_BARRA = 5;
 
-        const animEntrada = "property: position; to: 0 1.6 -2.5; dur: 8000; easing: easeOutCubic; delay: 500";
+    function formatearTiempo(segundos) {
+      const min = Math.floor(segundos / 60);
+      const seg = Math.floor(segundos % 60);
+      return `${min}:${seg.toString().padStart(2, '0')}`;
+    }
 
-        function generarEstrellas(cantidad) {
-            for (let i = 0; i < cantidad; i++) {
-                let estrella = document.createElement('a-sphere');
-                let theta = Math.random() * Math.PI * 2;
-                let phi = Math.acos((Math.random() * 2) - 1);
-                let dist = 50;
-                let x = dist * Math.sin(phi) * Math.cos(theta);
-                let y = dist * Math.sin(phi) * Math.sin(theta);
-                let z = dist * Math.cos(phi);
+    video.addEventListener('loadedmetadata', () => {
+      DURACION_TOTAL = video.duration;
+    });
 
-                estrella.setAttribute('position', `${x} ${y} ${z}`);
-                estrella.setAttribute('radius', Math.random() * 0.15);
-                estrella.setAttribute('material', 'color: #FFF; shader: flat');
-                estrella.setAttribute('animation', {
-                    property: 'material.opacity',
-                    from: Math.random(),
-                    to: 1,
-                    dur: Math.random() * 3000 + 2000,
-                    dir: 'alternate',
-                    loop: true
-                });
-                estrellasContainer.appendChild(estrella);
-            }
-        }
+    // --- GENERADOR DE AURORA BOREAL ---
+    const coloresAurora = ['#33ff88', '#33ccff', '#aa33ff', '#33ffcc'];
+    
+    for (let i = 0; i < 15; i++) {
+        let aurora = document.createElement('a-plane');
+        let radio = 40 + (Math.random() * 5);
+        let angulo = (Math.PI * 2 / 15) * i;
+        
+        let x = Math.cos(angulo) * radio;
+        let z = Math.sin(angulo) * radio;
+        let y = 10 + (Math.random() * 15);
 
-        generarEstrellas(500);
-
-        // --- LÓGICA DE EVENTOS MEJORADA ---
-        btnAccion.addEventListener('click', function() {
-            contenedorBtn.setAttribute('visible', 'false');
-            telonNegro.emit('cineStart');
-
-            // 1. Las estrellas aparecen inmediatamente al hacer clic
-            estrellasContainer.setAttribute('visible', 'true');
-
-            // 2. Preparamos el video y lo mostramos
-            video.currentTime = 0;
-            pantalla.setAttribute('visible', 'true');
-            pantalla.emit('videoEntra');
-
-            // 3. El video empieza a sonar/correr casi al mismo tiempo que se mueve la pantalla
-            setTimeout(() => { 
-                video.play(); 
-            }, 100); 
+        aurora.setAttribute('position', `${x} ${y} ${z}`);
+        aurora.setAttribute('rotation', `0 ${-(angulo * 180 / Math.PI) + 90} 0`);
+        aurora.setAttribute('width', 20 + Math.random() * 20);
+        aurora.setAttribute('height', 15 + Math.random() * 10);
+        
+        // Material con transparencia y color aleatorio de la paleta
+        aurora.setAttribute('material', {
+            color: coloresAurora[Math.floor(Math.random() * coloresAurora.length)],
+            shader: 'flat',
+            transparent: true,
+            opacity: 0.4,
+            side: 'double',
+            blending: 'additive'
         });
 
-        video.addEventListener('ended', function() {
-            telonNegro.emit('cineEnd');
-            estrellasContainer.setAttribute('visible', 'false');
-            pantalla.emit('videoSale');
-
-            setTimeout(() => {
-                pantalla.setAttribute('visible', 'false');
-                textoBoton.setAttribute('value', 'VUELVE A VER\nNUESTRA\nHISTORIA');
-                contenedorBtn.setAttribute('position', '0 1.6 -15');
-                contenedorBtn.removeAttribute('animation');
-                contenedorBtn.setAttribute('visible', 'true');
-
-                setTimeout(() => {
-                    contenedorBtn.setAttribute('animation', animEntrada);
-                }, 50);
-            }, 4000);
+        // Animación de movimiento ondulatorio (Efecto cortina)
+        aurora.setAttribute('animation__move', {
+            property: 'position',
+            to: `${x} ${y + 2} ${z + 2}`,
+            dur: 3000 + (Math.random() * 2000),
+            dir: 'alternate',
+            loop: true,
+            easing: 'easeInOutSine'
         });
-    </script>
+
+        // Animación de desvanecimiento
+        aurora.setAttribute('animation__fade', {
+            property: 'material.opacity',
+            from: 0.1,
+            to: 0.4,
+            dur: 4000 + (Math.random() * 3000),
+            dir: 'alternate',
+            loop: true
+        });
+
+        auroraContainer.appendChild(aurora);
+    }
+
+    function actualizarInterfaz() {
+      if (!DURACION_TOTAL || video.paused) return;
+      const tiempoActual = video.currentTime;
+      const progreso = tiempoActual / DURACION_TOTAL;
+      barraProgreso.setAttribute('width', Math.max(0.01, progreso * ANCHO_BARRA));
+      barraProgreso.setAttribute('position', `${-2.5 + (progreso * ANCHO_BARRA) / 2} -1.6 0.02`);
+      textoDuracion.setAttribute('value', `${formatearTiempo(tiempoActual)} / ${formatearTiempo(DURACION_TOTAL)}`);
+      requestAnimationFrame(actualizarInterfaz);
+    }
+
+    video.addEventListener('timeupdate', actualizarInterfaz);
+
+    document.querySelector('#btnAccion').addEventListener('click', () => {
+      contenedorBtn.setAttribute('visible', 'false');
+      telon.emit('cineStart'); 
+      grupoVideo.setAttribute('visible', 'true');
+      
+      video.play().then(() => {
+          auroraContainer.setAttribute('visible', 'true'); // Ahora activa la aurora
+          actualizarInterfaz(); 
+      });
+    });
+
+    function volverAlMenu() {
+      video.pause();
+      video.currentTime = 0;
+      grupoVideo.setAttribute('visible', 'false');
+      telon.emit('cineEnd'); 
+      auroraContainer.setAttribute('visible', 'false'); // Oculta la aurora
+      textoBoton.setAttribute('value', 'VUELVE A VER\nNUESTRA HISTORIA');
+      contenedorBtn.setAttribute('visible', 'true');
+      barraProgreso.setAttribute('width', 0.01);
+      barraProgreso.setAttribute('position', '-2.5 -1.6 0.02');
+    }
+
+    document.querySelector('#btnReset').addEventListener('click', () => {
+      video.currentTime = 0;
+      video.play();
+      txtPausa.setAttribute('value', 'PAUSA');
+    });
+
+    document.querySelector('#btnSalir').addEventListener('click', volverAlMenu);
+    video.addEventListener('ended', volverAlMenu);
+
+    document.querySelector('#btnPausa').addEventListener('click', () => {
+      if (video.paused) { 
+        video.play(); 
+        txtPausa.setAttribute('value', 'PAUSA');
+        actualizarInterfaz(); 
+      } else { 
+        video.pause(); 
+        txtPausa.setAttribute('value', 'PLAY'); 
+      }
+    });
+
+    document.querySelector('#btnNormal').addEventListener('click', () => video.playbackRate = 1);
+    document.querySelector('#btnRapido').addEventListener('click', () => video.playbackRate = 4);
+  </script>
 </body>
 </html>
-
-
-
-
-
 
 
 
