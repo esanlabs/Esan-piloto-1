@@ -4,18 +4,45 @@
   <meta charset="utf-8">
   <title>ESAN - Trayectoria histórica</title>
   <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <script>
+    // Shader personalizado para eliminar la raya difuminando los bordes del video
+    AFRAME.registerShader('aurora-sin-raya', {
+      schema: {
+        src: {type: 'map', is: 'uniform'},
+        opacity: {type: 'number', is: 'uniform', default: 0.75}
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        varying vec2 vUv;
+        uniform sampler2D src;
+        uniform float opacity;
+        void main() {
+          // Creamos una máscara que difumina los bordes izquierdo (0.0) y derecho (1.0)
+          // Esto elimina la raya donde se une el video
+          float mask = smoothstep(0.0, 0.1, vUv.x) * smoothstep(1.0, 0.9, vUv.x);
+          vec4 color = texture2D(src, vUv);
+          gl_FragColor = vec4(color.rgb, color.a * opacity * mask);
+        }
+      `
+    });
+  </script>
 </head>
 
 <body>
   <a-scene>
     <a-assets>
       <img id="esan360" src="patio.jpg">
-      <video id="auroraVideo" src="aurora.mp4" autoplay loop="true" crossorigin="anonymous" playsinline webkit-playsinline muted></video>
-      <video id="videoUni" src="video5.mp4" preload="auto"
-             crossorigin="anonymous" playsinline webkit-playsinline></video>
+      <video id="auroraVideo" src="aurora1.mp4" autoplay loop="true" crossorigin="anonymous" playsinline webkit-playsinline muted></video>
+      <video id="videoUni" src="mundo.mp4" preload="auto" crossorigin="anonymous" playsinline webkit-playsinline></video>
     </a-assets>
 
-    <a-sky id="fondoEscena" src="#esan360" rotation="0 -90 0"></a-sky>
+    <a-sky src="#esan360" rotation="0 -90 0"></a-sky>
     
     <a-entity id="estrellas" visible="false" 
               animation="property: rotation; to: 0 360 0; dur: 200000; easing: linear; loop: true">
@@ -36,8 +63,7 @@
       visible="false"
       segments-width="64"
       segments-height="64"
-      rotation="0 -90 0"
-      material="transparent: true; opacity: 0.75; shader: flat; side: back">
+      material="shader: aurora-sin-raya; transparent: true; opacity: 0.9; side: back">
     </a-videosphere>
 
     <a-entity id="grupoVideo" position="0 1.6 -4" visible="false">
@@ -90,7 +116,6 @@
     const textoDuracion = document.querySelector('#textoDuracion');
     const estrellasContainer = document.querySelector('#estrellas');
     const auroraCielo = document.querySelector('#auroraCielo');
-    const fondoEscena = document.querySelector('#esan360');
 
     let DURACION_TOTAL = 0;
     const ANCHO_BARRA = 5;
@@ -189,12 +214,6 @@
   </script>
 </body>
 </html>
-
-
-
-
-
-
 
 
 
