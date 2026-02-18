@@ -5,7 +5,6 @@
   <title>ESAN - Trayectoria histórica</title>
   <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
   <script>
-    // Shader personalizado para eliminar la raya difuminando los bordes del video
     AFRAME.registerShader('aurora-sin-raya', {
       schema: {
         src: {type: 'map', is: 'uniform'},
@@ -23,8 +22,6 @@
         uniform sampler2D src;
         uniform float opacity;
         void main() {
-          // Creamos una máscara que difumina los bordes izquierdo (0.0) y derecho (1.0)
-          // Esto elimina la raya donde se une el video
           float mask = smoothstep(0.0, 0.1, vUv.x) * smoothstep(1.0, 0.9, vUv.x);
           vec4 color = texture2D(src, vUv);
           gl_FragColor = vec4(color.rgb, color.a * opacity * mask);
@@ -98,10 +95,10 @@
       </a-circle>
     </a-entity>
 
-    <a-entity id="rig" position="0 0 0">
-      <a-camera look-controls wasd-controls>
-        <a-cursor color="#FFD700" raycaster="objects: .clickable"></a-cursor>
-      </a-camera>
+    <a-entity id="rig">
+      <a-camera look-controls wasd-controls position="0 1.6 0"></a-camera>
+      <a-entity laser-controls="hand: left" raycaster="objects: .clickable; far: 10"></a-entity>
+      <a-entity laser-controls="hand: right" raycaster="objects: .clickable; far: 10"></a-entity>
     </a-entity>
   </a-scene>
 
@@ -130,7 +127,6 @@
       DURACION_TOTAL = video.duration;
     });
 
-    // Generar estrellas
     for (let i = 0; i < 2000; i++) {
         let estrella = document.createElement('a-sphere');
         let theta = Math.random() * Math.PI * 2;
@@ -166,7 +162,6 @@
       contenedorBtn.setAttribute('visible', 'false');
       telon.emit('cineStart'); 
       grupoVideo.setAttribute('visible', 'true');
-      
       video.play().then(() => {
           estrellasContainer.setAttribute('visible', 'true');
           auroraCielo.setAttribute('visible', 'true');
