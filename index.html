@@ -33,7 +33,7 @@
     });
 
     // ========================================================
-    // COMPONENTE THREE.JS: CUBOS VIVOS EN MOVIMIENTO CONSTANTE (TAMAÑO CHICO)
+    // COMPONENTE THREE.JS: CUBOS VIVOS (BLANCO, ROJO, CELESTE)
     // ========================================================
     AFRAME.registerComponent('cubos-digitales', {
       init: function () {
@@ -44,10 +44,10 @@
         const positions = new Float32Array(this.count * 3);
         const colors = new Float32Array(this.count * 3);
         
-        // Colores exactos: Cyan eléctrico, Magenta y Púrpura
-        const colorCyan = new THREE.Color(0x00f0ff);
-        const colorMagenta = new THREE.Color(0xff00aa);
-        const colorPurple = new THREE.Color(0xb829dd);
+        // Nueva Paleta de Colores Solicitada
+        const colorBlanco = new THREE.Color(0xffffff);
+        const colorRojo = new THREE.Color(0xe3173e); // Rojo institucional de ESAN
+        const colorCeleste = new THREE.Color(0x00bfff);
         
         this.velocities = [];
 
@@ -57,8 +57,9 @@
           positions[i * 3 + 1] = (Math.random() - 0.5) * 40 + 1.6; // Centrado a la altura de los ojos en VR
           positions[i * 3 + 2] = (Math.random() - 0.5) * 50;
           
+          // Selección aleatoria proporcional de los nuevos colores
           const rand = Math.random();
-          const selectedColor = rand > 0.6 ? colorCyan : (rand > 0.2 ? colorMagenta : colorPurple);
+          const selectedColor = rand > 0.66 ? colorBlanco : (rand > 0.33 ? colorRojo : colorCeleste);
           
           colors[i * 3] = selectedColor.r;
           colors[i * 3 + 1] = selectedColor.g;
@@ -82,7 +83,7 @@
         ctx.fillRect(0, 0, 16, 16);
         const texture = new THREE.CanvasTexture(canvas);
 
-        // Se redujo el tamaño base a 0.22 para asegurar que se vean chicos y estéticos
+        // Se mantiene el tamaño chico y estético calibrado
         this.material = new THREE.PointsMaterial({
           size: 0.22,
           vertexColors: true,
@@ -103,28 +104,27 @@
         
         const pos = this.geometry.attributes.position.array;
         
-        // CALIBRACIÓN DE ANIMACIÓN DE TAMAÑO CHICO:
-        // Pulsación sutil y controlada. El tamaño oscilará suavemente entre 0.12 y 0.28 (escala ideal para VR)
+        // Pulsación sutil y controlada. El tamaño oscila suavemente de manera armónica
         this.material.size = (Math.sin(time * 0.002) * 0.08) + 0.20;
 
         for (let i = 0; i < this.count; i++) {
           const i3 = i * 3;
           
-          // 1. Movimiento constante en los 3 ejes (Flotación por el espacio)
+          // Movimiento constante en los 3 ejes (Flotación por el espacio)
           pos[i3] += this.velocities[i3];
           pos[i3 + 1] += this.velocities[i3 + 1];
           pos[i3 + 2] += this.velocities[i3 + 2];
           
-          // Límites espaciales (Efecto rebote sutil para que no se pierdan en el infinito)
+          // Límites espaciales (Efecto rebote para contener la galaxia de datos)
           if (Math.abs(pos[i3]) > 25) this.velocities[i3] *= -1;
           if (Math.abs(pos[i3 + 1] - 1.6) > 20) this.velocities[i3 + 1] *= -1;
           if (Math.abs(pos[i3 + 2]) > 25) this.velocities[i3 + 2] *= -1;
         }
         
-        // Notificar a la GPU que actualice las posiciones transformadas en tiempo real
+        // Notificar a la GPU la actualización estructural
         this.geometry.attributes.position.needsUpdate = true;
         
-        // Rotación general constante de toda la galaxia de cubos
+        // Rotación general constante
         this.particleSystem.rotation.y += 0.0005;
         this.particleSystem.rotation.x += 0.0002;
       }
