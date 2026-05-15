@@ -33,7 +33,7 @@
     });
 
     // ========================================================
-    // COMPONENTE THREE.JS: CUBOS VIVOS (BLANCO, ROJO, CELESTE)
+    // COMPONENTE THREE.JS: CUBOS VIVOS (ROJO, CELESTE, BLANCO)
     // ========================================================
     AFRAME.registerComponent('cubos-digitales', {
       init: function () {
@@ -44,10 +44,10 @@
         const positions = new Float32Array(this.count * 3);
         const colors = new Float32Array(this.count * 3);
         
-        // Nueva Paleta de Colores Solicitada
-        const colorBlanco = new THREE.Color(0xffffff);
-        const colorRojo = new THREE.Color(0xe3173e); // Rojo institucional de ESAN
-        const colorCeleste = new THREE.Color(0x00bfff);
+        // PALETA DE COLORES CORREGIDA Y CORRELACTIVA
+        const colorRojo = new THREE.Color(0xe3173e);    // Rojo institucional ESAN
+        const colorCeleste = new THREE.Color(0x00bfff); // Celeste digital
+        const colorBlanco = new THREE.Color(0xffffff);  // Blanco puro
         
         this.velocities = [];
 
@@ -57,9 +57,16 @@
           positions[i * 3 + 1] = (Math.random() - 0.5) * 40 + 1.6; // Centrado a la altura de los ojos en VR
           positions[i * 3 + 2] = (Math.random() - 0.5) * 50;
           
-          // Selección aleatoria proporcional de los nuevos colores
+          // Selección aleatoria estricta entre Rojo, Celeste y Blanco
           const rand = Math.random();
-          const selectedColor = rand > 0.66 ? colorBlanco : (rand > 0.33 ? colorRojo : colorCeleste);
+          let selectedColor;
+          if (rand < 0.33) {
+            selectedColor = colorRojo;
+          } else if (rand < 0.66) {
+            selectedColor = colorCeleste;
+          } else {
+            selectedColor = colorBlanco;
+          }
           
           colors[i * 3] = selectedColor.r;
           colors[i * 3 + 1] = selectedColor.g;
@@ -104,7 +111,8 @@
         
         const pos = this.geometry.attributes.position.array;
         
-        // Pulsación sutil y controlada. El tamaño oscila suavemente de manera armónica
+        // ANIMACIÓN DE TAMAÑO CHICO Y SUAVE:
+        // El tamaño oscilará dinámicamente entre 0.12 y 0.28 de manera sutil para VR
         this.material.size = (Math.sin(time * 0.002) * 0.08) + 0.20;
 
         for (let i = 0; i < this.count; i++) {
