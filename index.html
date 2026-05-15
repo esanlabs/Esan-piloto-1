@@ -33,34 +33,34 @@
     });
 
     // ========================================================
-    // COMPONENTE THREE.JS: CUBOS MÁGICOS CON ANIMACIÓN DE TAMAÑO
+    // COMPONENTE THREE.JS: CUBOS VIVOS EN MOVIMIENTO CONSTANTE
     // ========================================================
     AFRAME.registerComponent('cubos-digitales', {
       init: function () {
         const scene3D = this.el.sceneEl.object3D;
-        this.count = 1200; // Cantidad óptima de cubos flotantes
+        this.count = 1000; // Cantidad óptima y fluida para VR
         
         this.geometry = new THREE.BufferGeometry();
         const positions = new Float32Array(this.count * 3);
         const colors = new Float32Array(this.count * 3);
         
-        // Colores: Cyan eléctrico, Magenta/Fucsia y Púrpura híbrido
+        // Colores exactos: Cyan eléctrico, Magenta y Púrpura
         const colorCyan = new THREE.Color(0x00f0ff);
         const colorMagenta = new THREE.Color(0xff00aa);
         const colorPurple = new THREE.Color(0xb829dd);
         
-        // Almacenes para dinámicas individuales de escala y oscilación
+        // Almacenamiento de dinámicas individuales de animación
         this.baseSizes = new Float32Array(this.count);
         this.scaleSpeeds = new Float32Array(this.count);
         this.timeOffsets = new Float32Array(this.count);
-        
+        this.velocities = [];
+
         for (let i = 0; i < this.count; i++) {
-          // Posiciones tridimensionales en un radio envolvente
-          positions[i * 3] = (Math.random() - 0.5) * 60;
-          positions[i * 3 + 1] = (Math.random() - 0.5) * 60;
-          positions[i * 3 + 2] = (Math.random() - 0.5) * 60;
+          // Distribución en un entorno envolvente completo alrededor de la cámara
+          positions[i * 3] = (Math.random() - 0.5) * 50;
+          positions[i * 3 + 1] = (Math.random() - 0.5) * 40 + 1.6; // Centrado a la altura de los ojos en VR
+          positions[i * 3 + 2] = (Math.random() - 0.5) * 50;
           
-          // Asignación aleatoria de la paleta de colores
           const rand = Math.random();
           const selectedColor = rand > 0.6 ? colorCyan : (rand > 0.2 ? colorMagenta : colorPurple);
           
@@ -68,93 +68,73 @@
           colors[i * 3 + 1] = selectedColor.g;
           colors[i * 3 + 2] = selectedColor.b;
 
-          // Parámetros de animación de tamaño por cada partícula
-          this.baseSizes[i] = Math.random() * 0.4 + 0.3; // Tamaño base del cubo
-          this.scaleSpeeds[i] = Math.random() * 0.003 + 0.002; // Velocidad de agrandado/achicado
-          this.timeOffsets[i] = Math.random() * 100; // Desfase para que no todos muten al mismo tiempo
+          // Propiedades únicas de pulsación por cada cubo
+          this.baseSizes[i] = Math.random() * 0.5 + 0.2; 
+          this.scaleSpeeds[i] = Math.random() * 0.005 + 0.002; 
+          this.timeOffsets[i] = Math.random() * 500; 
+
+          // Velocidades de movimiento tridimensional continuo
+          this.velocities.push((Math.random() - 0.5) * 0.02); // X
+          this.velocities.push((Math.random() - 0.5) * 0.02); // Y
+          this.velocities.push((Math.random() - 0.5) * 0.02); // Z
         }
         
         this.geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         this.geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
         
-        // Custom shader material para permitir la alteración dinámica de tamaño por vértice de forma masiva
-        this.material = new THREE.ShaderMaterial({
-          uniforms: {
-            uTime: { value: 0.0 }
-          },
-          vertexShader: `
-            attribute vec3 color;
-            varying vec3 vColor;
-            void main() {
-              vColor = color;
-              vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-              // El tamaño se calcula en el shader para mantener un rendimiento óptimo
-              gl_PointSize = 30.0 * (1.0 / -mvPosition.z); 
-              gl_Position = projectionMatrix * mvPosition;
-            }
-          `,
-          fragmentShader: `
-            varying vec3 vColor;
-            void main() {
-              // Forzar a que los puntos se rendericen como cuadrados perfectos (cubos planos)
-              gl_FragColor = vec4(vColor, 0.85);
-            }
-          `,
+        // Crear una textura blanca cuadrada en memoria para que responda a gl_PointSize correctamente
+        const canvas = document.createElement('canvas');
+        canvas.width = 16;
+        canvas.height = 16;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, 16, 16);
+        const texture = new THREE.CanvasTexture(canvas);
+
+        // Material nativo de alto rendimiento optimizado para WebXR
+        this.material = new THREE.PointsMaterial({
+          size: 0.6,
+          vertexColors: true,
           transparent: true,
+          opacity: 0.9,
+          map: texture,
           blending: THREE.AdditiveBlending,
           depthWrite: false
         });
-
-        // Alternativa nativa optimizada si el shader personalizado restringe tamaños fijos en ciertos navegadores VR:
-        // Usaremos el PointsMaterial estándar pero manipulando una escala senoidal generalizada y desplazamientos individuales
-        this.materialStandard = new THREE.PointsMaterial({
-          size: 0.5,
-          vertexColors: true,
-          transparent: true,
-          opacity: 0.8,
-          blending: THREE.AdditiveBlending
-        });
         
-        this.particleSystem = new THREE.Points(this.geometry, this.materialStandard);
-        
-        // Generar velocidades individuales para simular traslación/flotación básica
-        this.velocities = [];
-        for (let i = 0; i < this.count * 3; i++) {
-          this.velocities.push((Math.random() - 0.5) * 0.012);
-        }
-        
+        this.particleSystem = new THREE.Points(this.geometry, this.material);
         scene3D.add(this.particleSystem);
       },
       
-      // Ciclo de animación continuo sincronizado con la pantalla de las gafas
+      // Ciclo de renderizado continuo (Garantiza el movimiento perpetuo)
       tick: function (time, timeDelta) {
-        if (!this.particleSystem || !this.el.getAttribute('visible')) return;
+        if (!this.particleSystem) return;
         
         const pos = this.geometry.attributes.position.array;
         
-        // Modificación global sutil del tamaño basándonos en el tiempo transcurrido
-        // Esto genera que todo el conjunto tenga una pulsación orgánica colectiva mientras flotan
-        const pulseFactor = Math.sin(time * 0.002) * 0.25 + 0.5;
-        this.materialStandard.size = pulseFactor;
+        // Animación de tamaño global combinada con desfases individuales
+        // Esto hace que el entorno pulse orgánicamente y los cubos cambien de escala alternadamente
+        this.material.size = (Math.sin(time * 0.0015) * 0.3) + 0.6;
 
         for (let i = 0; i < this.count; i++) {
           const i3 = i * 3;
           
-          // 1. Animación de movimiento (Flotación)
+          // 1. Movimiento constante en los 3 ejes (Flotación por el espacio)
           pos[i3] += this.velocities[i3];
           pos[i3 + 1] += this.velocities[i3 + 1];
           pos[i3 + 2] += this.velocities[i3 + 2];
           
-          // Contener las partículas en el espacio virtual (Límites de la caja)
-          if (Math.abs(pos[i3]) > 30) this.velocities[i3] *= -1;
-          if (Math.abs(pos[i3 + 1]) > 30) this.velocities[i3 + 1] *= -1;
-          if (Math.abs(pos[i3 + 2]) > 30) this.velocities[i3 + 2] *= -1;
+          // Límites espaciales (Efecto rebote sutil para que no se pierdan en el infinito)
+          if (Math.abs(pos[i3]) > 25) this.velocities[i3] *= -1;
+          if (Math.abs(pos[i3 + 1] - 1.6) > 20) this.velocities[i3 + 1] *= -1;
+          if (Math.abs(pos[i3 + 2]) > 25) this.velocities[i3 + 2] *= -1;
         }
         
+        // Notificar a la GPU que actualice las posiciones transformadas en tiempo real
         this.geometry.attributes.position.needsUpdate = true;
         
-        // Rotación orbital constante de la nube de datos
-        this.particleSystem.rotation.y += 0.0006;
+        // Rotación general constante de toda la galaxia de cubos
+        this.particleSystem.rotation.y += 0.0005;
         this.particleSystem.rotation.x += 0.0002;
       }
     });
@@ -171,7 +151,7 @@
 
     <a-sky src="#esan360" rotation="0 -90 0"></a-sky>
     
-    <a-entity id="estrellas" cubos-digitales visible="false"></a-entity>
+    <a-entity id="estrellas" cubos-digitales></a-entity>
 
     <a-sphere
       id="telonNegro"
@@ -239,7 +219,6 @@
     const txtPausa = document.querySelector('#txtPausa');
     const barraProgreso = document.querySelector('#barraProgreso');
     const textoDuracion = document.querySelector('#textoDuracion');
-    const estrellasContainer = document.querySelector('#estrellas');
     const auroraCielo = document.querySelector('#auroraCielo');
 
     let DURACION_TOTAL = 0;
@@ -272,7 +251,6 @@
       telon.emit('cineStart'); 
       grupoVideo.setAttribute('visible', 'true');
       video.play().then(() => {
-          estrellasContainer.setAttribute('visible', 'true');
           auroraCielo.setAttribute('visible', 'true');
           auroraVid.play(); 
           actualizarInterfaz(); 
@@ -285,7 +263,6 @@
       video.currentTime = 0;
       grupoVideo.setAttribute('visible', 'false');
       telon.emit('cineEnd'); 
-      estrellasContainer.setAttribute('visible', 'false');
       auroraCielo.setAttribute('visible', 'false');
       document.querySelector('#textoBoton').setAttribute('value', 'VUELVE A VER\nNUESTRA HISTORIA');
       contenedorBtn.setAttribute('visible', 'true');
