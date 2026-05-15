@@ -33,7 +33,7 @@
     });
 
     // ========================================================
-    // COMPONENTE THREE.JS: CUBOS VIVOS EN MOVIMIENTO CONSTANTE
+    // COMPONENTE THREE.JS: CUBOS VIVOS EN MOVIMIENTO CONSTANTE (TAMAÑO CHICO)
     // ========================================================
     AFRAME.registerComponent('cubos-digitales', {
       init: function () {
@@ -49,10 +49,6 @@
         const colorMagenta = new THREE.Color(0xff00aa);
         const colorPurple = new THREE.Color(0xb829dd);
         
-        // Almacenamiento de dinámicas individuales de animación
-        this.baseSizes = new Float32Array(this.count);
-        this.scaleSpeeds = new Float32Array(this.count);
-        this.timeOffsets = new Float32Array(this.count);
         this.velocities = [];
 
         for (let i = 0; i < this.count; i++) {
@@ -67,11 +63,6 @@
           colors[i * 3] = selectedColor.r;
           colors[i * 3 + 1] = selectedColor.g;
           colors[i * 3 + 2] = selectedColor.b;
-
-          // Propiedades únicas de pulsación por cada cubo
-          this.baseSizes[i] = Math.random() * 0.5 + 0.2; 
-          this.scaleSpeeds[i] = Math.random() * 0.005 + 0.002; 
-          this.timeOffsets[i] = Math.random() * 500; 
 
           // Velocidades de movimiento tridimensional continuo
           this.velocities.push((Math.random() - 0.5) * 0.02); // X
@@ -91,9 +82,9 @@
         ctx.fillRect(0, 0, 16, 16);
         const texture = new THREE.CanvasTexture(canvas);
 
-        // Material nativo de alto rendimiento optimizado para WebXR
+        // Se redujo el tamaño base a 0.22 para asegurar que se vean chicos y estéticos
         this.material = new THREE.PointsMaterial({
-          size: 0.6,
+          size: 0.22,
           vertexColors: true,
           transparent: true,
           opacity: 0.9,
@@ -112,9 +103,9 @@
         
         const pos = this.geometry.attributes.position.array;
         
-        // Animación de tamaño global combinada con desfases individuales
-        // Esto hace que el entorno pulse orgánicamente y los cubos cambien de escala alternadamente
-        this.material.size = (Math.sin(time * 0.0015) * 0.3) + 0.6;
+        // CALIBRACIÓN DE ANIMACIÓN DE TAMAÑO CHICO:
+        // Pulsación sutil y controlada. El tamaño oscilará suavemente entre 0.12 y 0.28 (escala ideal para VR)
+        this.material.size = (Math.sin(time * 0.002) * 0.08) + 0.20;
 
         for (let i = 0; i < this.count; i++) {
           const i3 = i * 3;
