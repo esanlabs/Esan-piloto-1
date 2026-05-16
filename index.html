@@ -33,7 +33,7 @@
     });
 
     // ========================================================
-    // COMPONENTE THREE.JS: CUBOS VIVOS (ROJO, CELESTE, BLANCO)
+    // COMPONENTE THREE.JS: CUBOS VIVOS CON PREDOMINIO ROJO
     // ========================================================
     AFRAME.registerComponent('cubos-digitales', {
       init: function () {
@@ -44,7 +44,7 @@
         const positions = new Float32Array(this.count * 3);
         const colors = new Float32Array(this.count * 3);
         
-        // PALETA DE COLORES CORREGIDA Y CORRELACTIVA
+        // Paleta de Colores
         const colorRojo = new THREE.Color(0xe3173e);    // Rojo institucional ESAN
         const colorCeleste = new THREE.Color(0x00bfff); // Celeste digital
         const colorBlanco = new THREE.Color(0xffffff);  // Blanco puro
@@ -57,15 +57,15 @@
           positions[i * 3 + 1] = (Math.random() - 0.5) * 40 + 1.6; // Centrado a la altura de los ojos en VR
           positions[i * 3 + 2] = (Math.random() - 0.5) * 50;
           
-          // Selección aleatoria estricta entre Rojo, Celeste y Blanco
+          // Ajuste de probabilidades: 50% de probabilidad de ser Rojo
           const rand = Math.random();
           let selectedColor;
-          if (rand < 0.33) {
-            selectedColor = colorRojo;
-          } else if (rand < 0.66) {
-            selectedColor = colorCeleste;
+          if (rand < 0.50) {
+            selectedColor = colorRojo;       // Mayor densidad de cubos rojos
+          } else if (rand < 0.75) {
+            selectedColor = colorCeleste;    // 25% Celestes
           } else {
-            selectedColor = colorBlanco;
+            selectedColor = colorBlanco;     // 25% Blancos
           }
           
           colors[i * 3] = selectedColor.r;
