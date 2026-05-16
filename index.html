@@ -33,7 +33,7 @@
     });
 
     // ========================================================
-    // COMPONENTE THREE.JS: CUBOS VIVOS CON PREDOMINIO ROJO
+    // COMPONENTE THREE.JS: CUBOS VIVOS CON COLOR ROJO SÓLIDO
     // ========================================================
     AFRAME.registerComponent('cubos-digitales', {
       init: function () {
@@ -44,8 +44,8 @@
         const positions = new Float32Array(this.count * 3);
         const colors = new Float32Array(this.count * 3);
         
-        // Paleta de Colores
-        const colorRojo = new THREE.Color(0xe3173e);    // Rojo institucional ESAN
+        // Colores: Rojo puro y sólido, celeste vivo y blanco opaco
+        const colorRojo = new THREE.Color(0xff0026);    // Rojo puro muy intenso
         const colorCeleste = new THREE.Color(0x00bfff); // Celeste digital
         const colorBlanco = new THREE.Color(0xffffff);  // Blanco puro
         
@@ -57,15 +57,15 @@
           positions[i * 3 + 1] = (Math.random() - 0.5) * 40 + 1.6; // Centrado a la altura de los ojos en VR
           positions[i * 3 + 2] = (Math.random() - 0.5) * 50;
           
-          // Ajuste de probabilidades: 50% de probabilidad de ser Rojo
+          // Selección aleatoria estricta entre Rojo, Celeste y Blanco
           const rand = Math.random();
           let selectedColor;
-          if (rand < 0.50) {
-            selectedColor = colorRojo;       // Mayor densidad de cubos rojos
-          } else if (rand < 0.75) {
-            selectedColor = colorCeleste;    // 25% Celestes
+          if (rand < 0.33) {
+            selectedColor = colorRojo;
+          } else if (rand < 0.66) {
+            selectedColor = colorCeleste;
           } else {
-            selectedColor = colorBlanco;     // 25% Blancos
+            selectedColor = colorBlanco;
           }
           
           colors[i * 3] = selectedColor.r;
@@ -90,15 +90,14 @@
         ctx.fillRect(0, 0, 16, 16);
         const texture = new THREE.CanvasTexture(canvas);
 
-        // Se mantiene el tamaño chico y estético calibrado
+        // Cambiado a NormalBlending y habilitado el renderizado de profundidad para máxima solidez
         this.material = new THREE.PointsMaterial({
           size: 0.22,
           vertexColors: true,
           transparent: true,
-          opacity: 0.9,
+          opacity: 1.0, // Opacidad al máximo para evitar transparencias extrañas
           map: texture,
-          blending: THREE.AdditiveBlending,
-          depthWrite: false
+          blending: THREE.NormalBlending // El secreto para que los colores no se laven con el fondo claro
         });
         
         this.particleSystem = new THREE.Points(this.geometry, this.material);
